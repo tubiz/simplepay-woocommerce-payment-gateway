@@ -1,20 +1,12 @@
-# SimplePay WooCommerce Payment Gateway #
-**Contributors:** tubiz
-
-**Donate link:** http://bosun.me/donate
-
-**Tags:** woocommerce, payment gateway, payment gateways, mastercard, visa cards, mastercards, interswitch, verve cards, tubiz plugins, verve, nigeria, simplepay
-
-**Requires at least:** 3.5
-
-**Tested up to:** 4.0
-
-**Stable tag:** 1.0.0
-
-**License:** GPLv2 or later
-
-**License URI:** http://www.gnu.org/licenses/gpl-2.0.html
-
+=== SimplePay WooCommerce Payment Gateway ===
+Contributors: tubiz
+Donate link: http://bosun.me/donate
+Tags: woocommerce, payment gateway, payment gateways, mastercard, visa cards, mastercards, interswitch, verve cards, tubiz plugins, verve, nigeria, simplepay
+Requires at least: 3.5
+Tested up to: 4.0
+Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Simplepay Woocommerce Payment Gateway allows you to accept local and International payment via Verve Card, MasterCard, Visa Card & eTranzact.
 
@@ -22,7 +14,7 @@ Simplepay Woocommerce Payment Gateway allows you to accept local and Internation
 
 
 
-## Description ##
+== Description ==
 
 This is a Simplepay payment gateway for Woocommerce.
 
@@ -39,38 +31,38 @@ With this Simplepay Woocommerce Payment Gateway plugin, you will be able to acce
 * __Verve Card__
 * __eTranzact__
 
-### Note ###
+= Note =
 
 This plugin is meant to be used by merchants in Nigeria.
 
-### Plugin Features ###
+= Plugin Features =
 
 *   __Accept payment__ via Verve Card, MasterCard, Visa Card and eTranzact.
 * 	__Seamless integration__ into the WooCommerce checkout page.
 * 	__Add Naira__ currency symbol. To select it go to go to __WooCommerce > Settings__ from the left hand menu, then click __General__ from the top tab. From __Currency__ select Naira, then click on __Save Changes__ for your changes to be effected.
 
 
-### Suggestions / Feature Request ###
+= Suggestions / Feature Request =
 
 If you have suggestions or a new feature request, feel free to get in touch with me via the contact form on my website [here](http://bosun.me/get-in-touch/)
 
 You can also follow me on Twitter! **[@tubiz](http://twitter.com/tubiz)**
 
 
-### Contribute ###
+= Contribute =
 To contribute to this plugin feel free to fork it on GitHub [SimplePay Woocommerce Payment Gateway on GitHub](https://github.com/tubiz/simplepay-woocommerce-payment-gateway)
 
 
-## Installation ##
+== Installation ==
 
-### Automatic Installation ###
+= Automatic Installation =
 * 	Login to your WordPress Admin area
 * 	Go to "Plugins > Add New" from the left hand menu
 * 	In the search box type "Simplepay Woocommerce Payment Gateway"
 *	From the search result you will see "Simplepay Woocommerce Payment Gateway" click on "Install Now" to install the plugin
 *	A popup window will ask you to confirm your wish to install the Plugin.
 
-### Note: ###
+= Note: =
 If this is the first time you've installed a WordPress Plugin, you may need to enter the FTP login credential information. If you've installed a Plugin before, it will still have the login information. This information is available through your web server host.
 
 * Click "Proceed" to continue the installation. The resulting installation screen will list the installation as successful or note any problems during the install.
@@ -79,7 +71,7 @@ If this is the first time you've installed a WordPress Plugin, you may need to e
 * 	Click on the sub tab for "Simplepay".
 *	Configure your "Simplepay" settings. See below for details.
 
-### Manual Installation ###
+= Manual Installation =
 1. 	Download the plugin zip file
 2. 	Login to your WordPress Admin. Click on "Plugins > Add New" from the left hand menu.
 3.  Click on the "Upload" option, then click "Choose File" to select the zip file from your computer. Once selected, press "OK" and press the "Install Now" button.
@@ -90,8 +82,8 @@ If this is the first time you've installed a WordPress Plugin, you may need to e
 
 
 
-### Configure the plugin ###
-To configure the plugin, go to __WooCommerce > Settings__ from the left hand menu, then click "Payment Gateways" from the top tab. You should see __"SimplePay"__ as an option at the top of the screen. Click on it to configure the payment gateway.
+= Configure the plugin =
+To configure the plugin, go to __WooCommerce > Settings__ from the left hand menu, then click "Payment Gateways" from the top tab. You should see __"SimplePay"__ as an option at the top of the screen. Click on it to configure the payment gateway.
 
 __*You can select the radio button next to SimplePay from the list of payment gateways available to make it the default gateway.*__
 
@@ -109,9 +101,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 
 
-## Frequently Asked Questions ##
+== Frequently Asked Questions ==
 
-### What Do I Need To Use The Plugin ###
+= What Do I Need To Use The Plugin =
 
 1.	You need to have Woocommerce plugin installed and activated on your WordPress site.
 2.	You need to open a merchant account on [Simplepay](https://simplepay4u.com)
@@ -119,33 +111,25 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 
 
-## Changelog ##
+== Changelog ==
 
-### 1.0.0 ###
+= 1.0.0 =
 *   First release
 
 
 
 
 
-## Upgrade Notice ##
+== Upgrade Notice ==
 * No need to upgrade yet
 
 
-## Screenshots ##
+== Screenshots ==
 
-###1. SimplePay Woocommerce Payment Gateway setting page
-###
-![Screenshot 1](https://github.com/tubiz/simplepay-woocommerce-payment-gateway/blob/master/assets/screenshot-1.png)
+1. SimplePay Woocommerce Payment Gateway setting page
 
-###2. Test Mode notification, always displayed in the admin backend until when test mode is disabled
-###
-![Screenshot 2](https://github.com/tubiz/simplepay-woocommerce-payment-gateway/blob/master/assets/screenshot-2.png)
+2. Test Mode notification, always displayed in the admin backend until when test mode is disabled
 
-###3. SimplePay Wooocommerce Payment Gateway method on the checkout page
-###
-![Screenshot 3](https://github.com/tubiz/simplepay-woocommerce-payment-gateway/blob/master/assets/screenshot-3.png)
+3. SimplePay Wooocommerce Payment Gateway method on the checkout page
 
-###4. Successful Transaction page
-###
-![Screenshot 4](https://github.com/tubiz/simplepay-woocommerce-payment-gateway/blob/master/assets/screenshot-4.png)
+4. Successful Transaction page
