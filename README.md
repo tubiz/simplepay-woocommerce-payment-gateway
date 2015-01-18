@@ -9,7 +9,7 @@
 
 **Tested up to:** 4.1
 
-**Stable tag:** 1.0.0
+**Stable tag:** 1.0.1
 
 **License:** GPLv2 or later
 
@@ -117,9 +117,10 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 2.	You need to open a merchant account on [Simplepay](https://simplepay4u.com)
 
 
-
-
 ## Changelog ##
+
+### 1.0.1 ###
+* 	Fix: Added payment icon missing in version 1.0.0
 
 ### 1.0.0 ###
 *   First release
@@ -127,9 +128,10 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 
 
-
 ## Upgrade Notice ##
-* No need to upgrade yet
+
+### 1.0.1 ###
+* Added payment icon missing in version 1.0.0
 
 
 ## Screenshots ##

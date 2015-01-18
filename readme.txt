@@ -4,7 +4,7 @@ Donate link: http://bosun.me/donate
 Tags: woocommerce, payment gateway, payment gateways, mastercard, visa cards, mastercards, interswitch, verve cards, tubiz plugins, verve, nigeria, simplepay
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 == Changelog ==
 
+= 1.0.1 =
+* 	Fix: Added payment icon missing in version 1.0.0
+
 = 1.0.0 =
 *   First release
 
@@ -121,7 +124,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 
 == Upgrade Notice ==
-* No need to upgrade yet
+
+= 1.0.1 =
+* Added payment icon missing in version 1.0.0
 
 
 == Screenshots ==
