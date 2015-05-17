@@ -7,9 +7,9 @@
 
 **Requires at least:** 3.5
 
-**Tested up to:** 4.1
+**Tested up to:** 4.2
 
-**Stable tag:** 1.0.1
+**Stable tag:** 1.1.0
 
 **License:** GPLv2 or later
 
@@ -119,6 +119,10 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Changelog ##
 
+### 1.1.0 ###
+*	Fix: Use wc_get_order instead or declaring a new WC_Order class
+*	Fix: Removed all global $woocommerce variable
+
 ### 1.0.1 ###
 * 	Fix: Added payment icon missing in version 1.0.0
 
@@ -129,9 +133,6 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 
 ## Upgrade Notice ##
-
-### 1.0.1 ###
-* Added payment icon missing in version 1.0.0
 
 
 ## Screenshots ##
