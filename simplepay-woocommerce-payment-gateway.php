@@ -3,7 +3,7 @@
 	Plugin Name: SimplePay WooCommerce Payment Gateway
 	Plugin URI: http://bosun.me/simplepay-woocommerce-payment-gateway
 	Description: Simplepay Woocommerce Payment Gateway allows you to accept local and International payment via Verve Card, MasterCard, Visa Card & eTranzact.
-	Version: 1.1.0
+	Version: 1.2.0
 	Author: Tunbosun Ayinla
 	Author URI: http://bosun.me/
 	License:           GPL-2.0+
@@ -91,7 +91,7 @@ function tbz_wc_simplepay_init() {
 	            echo '</table>';
             }
 			else{	 ?>
-			<div class="inline error"><p><strong>SimplaPay Payment Gateway Disabled</strong>: <?php echo $this->msg ?></p></div>
+			<div class="inline error"><p><strong>SimplePay Payment Gateway Disabled</strong>: <?php echo $this->msg ?></p></div>
 
 			<?php }
         }
@@ -333,7 +333,7 @@ function tbz_wc_simplepay_init() {
 				if( 'SP0000' == $response_code ) {
 
 					// check if the amount paid is equal to the order amount.
-					if($order_total != $amount_paid) {
+					if( $amount_paid < $order_total ) {
 
 		                //Update the order status
 						$order->update_status('on-hold', '');

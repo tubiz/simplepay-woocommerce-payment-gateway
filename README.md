@@ -9,7 +9,7 @@
 
 **Tested up to:** 4.3
 
-**Stable tag:** 1.1.0
+**Stable tag:** 1.2.0
 
 **License:** GPLv2 or later
 
@@ -119,6 +119,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Changelog ##
 
+### 1.2.0 ###
+*	Fix: Don't set order status to on-hold if the customer is paying Simplepay fee or gateway fee after a successful payment
+
 ### 1.1.0 ###
 *	Fix: Use wc_get_order instead or declaring a new WC_Order class
 *	Fix: Removed all global $woocommerce variable
@@ -134,6 +137,8 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Upgrade Notice ##
 
+### 1.2.0 ###
+*	This update fixes a bug that set an order status to on-hold if the customer is paying Simplepay fee or gateway fee after a payment is successful
 
 ## Screenshots ##
 
