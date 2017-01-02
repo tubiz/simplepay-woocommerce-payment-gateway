@@ -2,8 +2,8 @@
 /*
 	Plugin Name: SimplePay WooCommerce Payment Gateway
 	Plugin URI: http://bosun.me/simplepay-woocommerce-payment-gateway
-	Description: Simplepay Woocommerce Payment Gateway allows you to accept local and International payment via Verve Card, MasterCard, Visa Card & eTranzact.
-	Version: 1.2.0
+	Description: Simplepay WooCommerce Payment Gateway allows you to accept local and International payment via Verve Card, MasterCard & Visa Card.
+	Version: 2.0.0
 	Author: Tunbosun Ayinla
 	Author URI: http://bosun.me/
 	License:           GPL-2.0+
@@ -14,100 +14,132 @@
 if ( ! defined( 'ABSPATH' ) )
 	exit;
 
-add_action('plugins_loaded', 'tbz_wc_simplepay_init', 0);
+add_action( 'plugins_loaded', 'tbz_wc_simplepay_init', 0 );
 
 function tbz_wc_simplepay_init() {
 
-	if ( !class_exists( 'WC_Payment_Gateway' ) ) return;
+	if ( ! class_exists( 'WC_Payment_Gateway' ) ) return;
 
 	/**
  	 * Gateway class
  	 */
 	class WC_Tbz_SimplePay_Gateway extends WC_Payment_Gateway {
 
-		public function __construct(){
+		public function __construct() {
 
 			$this->id 					= 'tbz_simplepay_gateway';
-    		$this->icon 				= apply_filters('woocommerce_simplepay_icon', plugins_url( 'assets/simplepay-icon.png' , __FILE__ ) );
+    		$this->icon 				= apply_filters( 'woocommerce_simplepay_icon', plugins_url( 'assets/simplepay-icon.png' , __FILE__ ) );
 			$this->has_fields 			= false;
 			$this->order_button_text    = 'Make Payment';
-        	$this->testurl 				= 'http://sandbox.simplepay4u.com/process.php';
-			$this->liveurl 				= 'https://simplepay4u.com/process.php';
 			$this->notify_url        	= WC()->api_request_url( 'WC_Tbz_SimplePay_Gateway' );
         	$this->method_title     	= 'SimplePay';
-        	$this->method_description  	= 'Payment Methods Accepted: MasterCard, VisaCard, Verve Card & eTranzact';
+        	$this->method_description  	= 'Payment Methods Accepted: MasterCard, Visa and Verve Cards';
 
 			$this->init_form_fields();
 			$this->init_settings();
 
 			// Define user set variables
-			$this->title 					= $this->get_option( 'title' );
-			$this->description 				= $this->get_option( 'description' );
-			$this->merchant_email			= $this->get_option( 'merchant_email' );
-			$this->logo_url					= $this->get_option( 'logo_url' );
-			$this->simplepay_fee			= $this->get_option( 'simplepay_fee' );
-			$this->gateway_fee				= $this->get_option( 'gateway_fee' );
-			$this->testmode					= $this->get_option( 'testmode' );
+			$this->title 				= $this->get_option( 'title' );
+			$this->description 			= $this->get_option( 'description' );
+			$this->logo_url				= $this->get_option( 'logo_url' );
+			$this->testmode             = $this->get_option( 'testmode' ) === 'yes' ? true : false;
+
+			$this->public_test_key  	= $this->get_option( 'public_test_key' );
+			$this->private_test_key  	= $this->get_option( 'private_test_key' );
+
+			$this->public_live_key  	= $this->get_option( 'public_live_key' );
+			$this->private_live_key  	= $this->get_option( 'private_live_key' );
+
+			$this->public_key      		= $this->testmode ? $this->public_test_key : $this->public_live_key;
+			$this->private_key      	= $this->testmode ? $this->private_test_key : $this->private_live_key;
 
 			//Actions
-			add_action('woocommerce_receipt_tbz_simplepay_gateway', array($this, 'receipt_page'));
+			add_action( 'wp_enqueue_scripts', array( $this, 'payment_scripts' ) );
+			add_action( 'woocommerce_receipt_tbz_simplepay_gateway', array( $this, 'receipt_page' ) );
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-
 			// Payment listener/API hook
-			add_action( 'woocommerce_api_wc_tbz_simplepay_gateway', array( $this, 'check_simplepay_response' ) );
+			add_action( 'woocommerce_api_wc_tbz_simplepay_gateway', array( $this, 'charge_token' ) );
 
 			// Check if the gateway can be used
 			if ( ! $this->is_valid_for_use() ) {
 				$this->enabled = false;
 			}
+
 		}
+
 
 		/**
 	 	* Check if the store curreny is set to NGN
 	 	**/
-		public function is_valid_for_use(){
+		public function is_valid_for_use() {
 
-			if( ! in_array( get_woocommerce_currency(), array('NGN') ) ){
+			if( ! in_array( get_woocommerce_currency(), array( 'NGN' ) ) ) {
 				$this->msg = 'SimplePay doesn\'t support your store currency, set it to Nigerian Naira &#8358; <a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-settings&tab=general">here</a>';
 				return false;
 			}
 
 			return true;
+
 		}
+
+
+		/**
+		 * Check if this gateway is enabled
+		 */
+		public function is_available() {
+
+			if ( $this->enabled == "yes" ) {
+
+				if ( ! ( $this->public_key && $this->private_key ) ) {
+					return false;
+				}
+
+				return true;
+
+			}
+
+			return false;
+
+		}
+
 
         /**
          * Admin Panel Options
          **/
-        public function admin_options(){
+        public function admin_options() {
+
             echo '<h3>SimplePay</h3>';
-            echo '<p>Simplepay Woocommerce Payment Gateway allows you to accept local and International payment on your Woocommerce store via Verve Card, MasterCard, Visa Card and eTranzact.</p>';
-            echo '<p>To open a SimplePay merchant account click <a href="https://simplepay4u.com" target="_blank">here</a>';
+            echo '<p>Simplepay WooCommerce Payment Gateway allows you to accept local and International payment on your WooCommerce store via MasterCard, Visa and Verve Cards.</p>';
+            echo '<p>To open a SimplePay merchant account click <a href="https://simplepay.ng" target="_blank">here</a>';
 
-
-			if ( $this->is_valid_for_use() ){
+			if ( $this->is_valid_for_use() ) {
 
 	            echo '<table class="form-table">';
 	            $this->generate_settings_html();
 	            echo '</table>';
-            }
-			else{	 ?>
-			<div class="inline error"><p><strong>SimplePay Payment Gateway Disabled</strong>: <?php echo $this->msg ?></p></div>
+
+            } else {	 ?>
+
+				<div class="inline error"><p><strong>SimplePay Payment Gateway Disabled</strong>: <?php echo $this->msg ?></p></div>
 
 			<?php }
+
         }
+
 
 	    /**
 	     * Initialise Gateway Settings Form Fields
 	    **/
-		function init_form_fields(){
+		function init_form_fields() {
+
 			$this->form_fields = array(
 				'enabled' => array(
-					'title' 			=> 'Enable/Disable',
-					'type' 				=> 'checkbox',
-					'label' 			=> 'Enable SimplePay Payment Gateway',
-					'description' 		=> 'Enable or disable the gateway.',
-            		'desc_tip'      	=> true,
-					'default' 			=> 'yes'
+					'title' 		=> 'Enable/Disable',
+					'type' 			=> 'checkbox',
+					'label' 		=> 'Enable SimplePay Payment Gateway',
+					'description' 	=> 'Enable or disable the gateway.',
+            		'desc_tip'      => true,
+					'default' 		=> 'yes'
 				),
 				'title' => array(
 					'title' 		=> 'Title',
@@ -122,13 +154,6 @@ function tbz_wc_simplepay_init() {
 					'description' 	=> 'This controls the description which the user sees during checkout.',
 					'default' 		=> 'Payment Methods Accepted: MasterCard, VisaCard, Verve Card & eTranzact'
 				),
-				'merchant_email' => array(
-					'title' 		=> 'SimplePay Merchant Email',
-					'type' 			=> 'email',
-					'description' 	=> 'Enter your SimplePay Merchant Account Email Address' ,
-					'default' 		=> '',
-	    			'desc_tip'      => false
-				),
 				'logo_url' 		=> array(
 					'title' 		=> 'Logo URL',
 					'type' 			=> 'text',
@@ -136,27 +161,29 @@ function tbz_wc_simplepay_init() {
 					'default' 		=> '',
 	    			'desc_tip'      => false
 				),
-				'simplepay_fee' 	=> array(
-					'title'       => 'Who Bear SimplePay Fee',
-					'type'        => 'select',
-					'description' => 'Select Who Bear the Cost of SimplePay Fee',
-					'default'     => 'customer',
-					'desc_tip'    => true,
-					'options'     => array(
-						'customer' => 'Customer',
-						'merchant' => 'Merchant'
-					)
+				'public_test_key' => array(
+					'title'       => 'Public Test Key',
+					'type'        => 'text',
+					'description' => 'Enter your Public Test Key here.',
+					'default'     => ''
 				),
-				'gateway_fee' => array(
-					'title'       => 'Who Bear the Gateway Fee',
-					'type'        => 'select',
-					'description' => 'Select Who Bear the Gateway Fee',
-					'default'     => 'customer',
-					'desc_tip'    => true,
-					'options'     => array(
-						'customer'  => 'Customer',
-						'merchant' 	=> 'Merchant'
-					)
+				'private_test_key' => array(
+					'title'       => 'Private Test Key',
+					'type'        => 'text',
+					'description' => 'Enter your Private Key here',
+					'default'     => ''
+				),
+				'public_live_key' => array(
+					'title'       => 'Public Live Key',
+					'type'        => 'text',
+					'description' => 'Enter your Public Live Key here.',
+					'default'     => ''
+				),
+				'private_live_key' => array(
+					'title'       => 'Private Live Key',
+					'type'        => 'text',
+					'description' => 'Enter your Private Live Key here.',
+					'default'     => ''
 				),
 				'testing' => array(
 					'title'       	=> 'Gateway Testing',
@@ -171,377 +198,197 @@ function tbz_wc_simplepay_init() {
 					'description' 		=> 'Test mode enables you to test payments before going live. <br />If you ready to start receving payment on your site, kindly uncheck this.',
 				)
 			);
+
 		}
+
 
 		/**
-		 * Get SimplePay Args for passing to SimplePay
-		**/
-		function get_simplepay_args( $order ) {
+		 * Outputs scripts used for SimplePay payment
+		 */
+		public function payment_scripts() {
 
-			$order_id 		= $order->id;
-
-			$order_total	= $order->get_total();
-
-            $notify_url 	= $this->notify_url;
-            $return_url     = esc_url( $this->get_return_url( $order ) );
-            $cancel_url 	= esc_url( $order->get_cancel_order_url() );
-
-			$memo        	= "Payment for Order ID: $order_id on ". get_bloginfo('name');
-
-			$logo_url		= $this->logo_url;
-
-			if ( 'customer' == $this->simplepay_fee ) {
-				$simplepay_fee = 'N';
-			}
-			else{
-				$simplepay_fee = 'Y';
+			if ( ! is_checkout_pay_page() ) {
+				return;
 			}
 
-			if ( 'customer' == $this->gateway_fee ) {
-				$gateway_fee = 'Y';
+			$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+
+			wp_enqueue_script( 'tbz_simplepay', 'https://checkout.simplepay.ng/simplepay.js', array( 'jquery' ), '1.0.0', true );
+
+			wp_enqueue_script( 'wc_simplepay', plugins_url( 'assets/js/simplepay'. $suffix . '.js', __FILE__ ), array( 'tbz_simplepay' ), '1.0.0', true );
+
+			if ( is_checkout_pay_page() && get_query_var( 'order-pay' ) ) {
+
+				$order_key 		= urldecode( $_GET['key'] );
+				$order_id  		= absint( get_query_var( 'order-pay' ) );
+
+				$order        	= wc_get_order( $order_id );
+				$email 			= $order->billing_email;
+				$amount 		= $order->order_total * 100;
+				$address 		= $order->billing_address_1 . ' ' . $order->billing_address_2;
+				$city 			= $order->billing_city;
+				$country 		= $order->billing_country;
+
+				$description 	= 'Payment for Order #' . $order_id;
+
+				if ( $order->id == $order_id && $order->order_key == $order_key ) {
+					$simplepay_params['key'] 			= $this->public_key;
+					$simplepay_params['email'] 			= $email;
+					$simplepay_params['address'] 		= $address;
+					$simplepay_params['city'] 			= $city;
+					$simplepay_params['country'] 		= $country;
+					$simplepay_params['amount']  		= $amount;
+					$simplepay_params['order_id']  		= $order_id;
+					$simplepay_params['description']	= $description;
+					$simplepay_params['currency']  		= 'NGN';
+					$simplepay_params['logo']			= $this->logo_url;
+				}
+
 			}
-			else{
-				$gateway_fee = 'N';
-			}
 
-			$merchant_email = $this->merchant_email;
+			wp_localize_script( 'wc_simplepay', 'wc_simplepay_params', $simplepay_params );
 
-			// SimplePay Args
-			$simplepay_args = array(
-				'member' 			=> $merchant_email,
-				'escrow'			=> 'N',
-				'unotify' 			=> $notify_url,
-				'ureturn' 			=> $return_url,
-				'ucancel' 			=> $cancel_url,
-				'price' 			=> $order_total,
-				'action' 			=> 'payment',
-				'comments' 			=> $memo,
-				'freeclient' 		=> $simplepay_fee,
-				'nocards'			=> 'N',
-				'chargeforcard' 	=> $gateway_fee,
-				'customid' 			=> $order_id,
-				'site_logo' 		=> $logo_url,
-			);
-
-			$simplepay_args = apply_filters( 'woocommerce_simplepay_args', $simplepay_args );
-			return $simplepay_args;
 		}
 
-	    /**
-		 * Generate the SimplePay Payment button link
-	    **/
-	    function generate_simplepay_form( $order_id ) {
-
-			$order 	= wc_get_order( $order_id );
-
-			if ( 'yes' == $this->testmode ) {
-        		$simplepay_adr = $this->testurl;
-			} else {
-				$simplepay_adr = $this->liveurl;
-			}
-
-			$simplepay_args = $this->get_simplepay_args( $order );
-
-			$simplepay_args_array = array();
-
-			foreach ($simplepay_args as $key => $value) {
-				$simplepay_args_array[] = '<input type="hidden" name="'.esc_attr( $key ).'" value="'.esc_attr( $value ).'" />';
-			}
-
-			wc_enqueue_js( '
-				$.blockUI({
-						message: "' . esc_js( __( 'Thank you for your order. We are now redirecting you to the gateway to make payment.', 'woocommerce' ) ) . '",
-						baseZ: 99999,
-						overlayCSS:
-						{
-							background: "#fff",
-							opacity: 0.6
-						},
-						css: {
-							padding:        "20px",
-							zindex:         "9999999",
-							textAlign:      "center",
-							color:          "#555",
-							border:         "3px solid #aaa",
-							backgroundColor:"#fff",
-							cursor:         "wait",
-							lineHeight:		"24px",
-						}
-					});
-				jQuery("#submit_simplepay_payment_form").click();
-			' );
-
-			return '<form action="' . esc_url( $simplepay_adr ) . '" method="post" id="simplepay_payment_form" target="_top">
-					' . implode( '', $simplepay_args_array ) . '
-					<!-- Button Fallback -->
-					<div class="payment_buttons">
-						<input type="submit" class="button alt" id="submit_simplepay_payment_form" value="Make Payment" />
-						<a class="button cancel" href="' . esc_url( $order->get_cancel_order_url() ) . '">Cancel order &amp; restore cart</a>
-					</div>
-					<script type="text/javascript">
-						jQuery(".payment_buttons").hide();
-					</script>
-				</form>';
-		}
 
 	    /**
 	     * Process the payment and return the result
 	    **/
-		function process_payment( $order_id ) {
+		public function process_payment( $order_id ) {
 
 			$order 			= wc_get_order( $order_id );
 
-			$simplepay_args = $this->get_simplepay_args( $order );
-
-			$simplepay_args = http_build_query( $simplepay_args, '', '&' );
-
 			return array(
-	        	'result' => 'success',
+	        	'result' 	=> 'success',
 				'redirect'	=> $order->get_checkout_payment_url( true )
 	        );
+
 		}
+
 
 	    /**
 	     * Output for the order received page.
 	    **/
-		function receipt_page( $order ) {
-			echo '<p>Thank you - your order is now pending payment. You will be automatically redirected to the gateway to make payment.</p>';
-			echo $this->generate_simplepay_form( $order );
+		public function receipt_page( $order_id ) {
+
+			$order = wc_get_order( $order_id );
+
+			echo '<p>Thank you for your order, please click the button below to pay with debit/credit card using SimplePay.</p>';
+
+			echo '<div id="simplepay_form"><form id="order_review" method="post" action="'. WC()->api_request_url( 'WC_Tbz_SimplePay_Gateway' ) .'"></form><button class="button alt" id="simplepay-payment-button">Pay Now</button> <a class="button cancel" href="' . esc_url( $order->get_cancel_order_url() ) . '">Cancel order &amp; restore cart</a></div>
+			';
 		}
+
 
 		/**
-		 * Verify a successful Payment!
+		 * Verify a payment token
 		**/
-		function check_simplepay_response( $posted ) {
+		public function charge_token() {
 
-			if( isset( $_POST['transaction_id'] ) ) {
+			if( isset( $_POST['wc_simplepay_token'], $_POST['wc_simplepay_order_id'] ) ) {
 
-				$transaction_id = $_POST['transaction_id'];
+				$verify_url		= 'https://api.simplepay.ng/v1/payments/verify';
 
-				$order_id 		= $_POST['customid'];
-				$order_id 		= (int) $order_id;
+				$order_id 		= (int) $_POST['wc_simplepay_order_id'];
 
 				$order 			= wc_get_order( $order_id );
-		        $order_total	= $order->get_total();
+		        $order_total	= $order->get_total() * 100;
 
-				$amount_paid    = $_POST['total'];
-				$response_code 	= $_POST['SP_TRANSACTION_ERROR_CODE'];
-				$response_desc  = $_POST['SP_TRANSACTION_ERROR'];
+				$headers = array(
+					'Content-Type'	=> 'application/json',
+					'Authorization' => 'Basic ' . base64_encode( $this->private_key . ':' . '' )
+				);
 
-                do_action('tbz_wc_simplepay_after_payment', $_POST);
+				$body = array(
+					'token' 			=> $_POST['wc_simplepay_token'],
+					'amount'			=> $order_total,
+					'amount_currency'	=> 'NGN',
+				);
 
-				if( 'SP0000' == $response_code ) {
+				$args = array(
+					'headers'	=> $headers,
+					'body'		=> json_encode( $body ),
+					'timeout'	=> 60,
+					'method'	=> 'POST'
+				);
 
-					// check if the amount paid is equal to the order amount.
-					if( $amount_paid < $order_total ) {
+				$request = wp_remote_post( $verify_url, $args );
 
-		                //Update the order status
-						$order->update_status('on-hold', '');
+		        if ( ! is_wp_error( $request ) && 200 == wp_remote_retrieve_response_code( $request ) ) {
 
-						//Error Note
-						$message = 'Thank you for shopping with us.<br />Your payment transaction was successful, but the amount paid is not the same as the total order amount.<br />Your order is currently on-hold.<br />Kindly contact us for more information regarding your order and payment status.';
-						$message_type = 'notice';
+	        		$simplepay_response = json_decode( wp_remote_retrieve_body( $request ) );
 
-						//Add Customer Order Note
-	                    $order->add_order_note($message.'<br />Simplepay Transaction ID: '.$transaction_id, 1);
+	        		$amount_paid 		= $simplepay_response->amount;
+	        		$transaction_id		= $simplepay_response->id;
 
-	                    //Add Admin Order Note
-	                    $order->add_order_note('Look into this order. <br />This order is currently on hold.<br />Reason: Amount paid is less than the total order amount.<br />Amount Paid was &#8358; '.$amount_paid.' while the total order amount is &#8358; '.$order_total.'<br />Simplepay Transaction ID: '.$transaction_id);
+                	do_action( 'tbz_wc_simplepay_after_payment', $simplepay_response );
 
-						// Reduce stock levels
-						$order->reduce_order_stock();
+					if( '20000' == $simplepay_response->response_code ) {
 
-						// Empty cart
-						WC()->cart->empty_cart();
-					}
-					else
-					{
+						// check if the amount paid is equal to the order amount.
+						if( $amount_paid < $order_total ) {
 
-		                if( $order->status == 'processing' ){
-		                    $order->add_order_note('Payment Via Simplepay Payment Gateway<br />Transaction ID: '.$transaction_id);
+			                //Update the order status
+							$order->update_status( 'on-hold', '' );
 
-		                    //Add customer order note
-		 					$order->add_order_note('Payment Received.<br />Your order is currently being processed.<br />We will be shipping your order to you soon.<br />Transaction ID: '.$transaction_id, 1);
+							add_post_meta( $order_id, '_transaction_id', $transaction_id, true );
 
-							// Reduce stock levels
-							$order->reduce_order_stock();
+							//Error Note
+							$notice = 'Thank you for shopping with us.<br />The payment was successful, but the amount paid is not the same as the order amount.<br />Your order is currently on-hold.<br />Kindly contact us for more information regarding your order and payment status.';
 
-							// Empty cart
-							WC()->cart->empty_cart();
+							$notice_type = 'notice';
 
-							$message = 'Thank you for shopping with us.<br />Your transaction was successful, payment was received.<br />Your order is currently being processed.';
-							$message_type = 'success';
-		                }
-		                else {
-
-		                	if( $order->has_downloadable_item() ){
-
-		                		//Update order status
-								$order->update_status( 'completed', 'Payment received, your order is now complete.' );
-
-			                    //Add admin order note
-			                    $order->add_order_note('Payment Via Simplepay Payment Gateway<br />Transaction ID: '.$transaction_id);
-
-			                    //Add customer order note
-			 					$order->add_order_note('Payment Received.<br />Your order is now complete.<br />Transaction ID: '.$transaction_id, 1);
-
-								$message = 'Thank you for shopping with us.<br />Your transaction was successful, payment was received.<br />Your order is now complete.';
-								$message_type = 'success';
-
-		                	}
-		                	else {
-
-		                		//Update order status
-								$order->update_status( 'processing', 'Payment received, your order is currently being processed.' );
-
-								//Add admin order noote
-			                    $order->add_order_note('Payment Via Simplepay Payment Gateway<br />Transaction ID: '.$transaction_id);
-
-			                    //Add customer order note
-			 					$order->add_order_note('Payment Received.<br />Your order is currently being processed.<br />We will be shipping your order to you soon.<br />Transaction ID: '.$transaction_id, 1);
-
-								$message = 'Thank you for shopping with us.<br />Your transaction was successful, payment was received.<br />Your order is currently being processed.';
-								$message_type = 'success';
-		                	}
+		                    //Add Admin Order Note
+		                    $order->add_order_note( 'Look into this order. <br />This order is currently on hold.<br />Reason: Amount paid is less than the order amount.<br />Amount Paid was &#8358;'. $amount_paid/100 .' while the order amount is &#8358;'. $order_total/100 .'<br />Simplepay Transaction ID: '.$transaction_id );
 
 							// Reduce stock levels
 							$order->reduce_order_stock();
 
-							// Empty cart
-							WC()->cart->empty_cart();
+							wc_add_notice( $notice, $notice_type );
+
+						} else {
+
+							$order->payment_complete( $transaction_id );
+
+							$order->add_order_note( sprintf( 'Payment via Simplepay successful (Transaction ID: %s)', $transaction_id ) );
 		                }
-	                }
 
-	                $simplepay_message = array(
-	                	'message'	=> $message,
-	                	'message_type' => $message_type
-	                );
+						wc_empty_cart();
 
-					if ( version_compare( WOOCOMMERCE_VERSION, "2.2" ) >= 0 ) {
-						add_post_meta( $order_id, '_transaction_id', $transaction_id, true );
-					}
+						wp_redirect( $this->get_return_url( $order ) );
 
-					update_post_meta( $order_id, '_tbz_simplepay_message', $simplepay_message );
+						exit;
 
-                    die( 'IPN Processed OK. Payment Successfully' );
-				}
+					} else {
 
-	            else
-	            {
-	            	$message = 	'Thank you for shopping with us. <br />However, the transaction wasn\'t successful, payment wasn\'t received.';
-					$message_type = 'error';
+						wp_redirect( wc_get_page_permalink( 'cart' ) );
 
-					//Add Customer Order Note
-                   	$order->add_order_note($message.'<br />Transaction ID: '.$transaction_id, 1);
+						exit;
+		            }
 
-                    //Add Admin Order Note
-                  	$order->add_order_note($message.'<br />Simplepay Transaction ID: '.$transaction_id);
+		        }
 
-
-	                //Update the order status
-					$order->update_status('failed', 'Payment failed');
-
-	                $simplepay_message = array(
-	                	'message'	  	=> $message,
-	                	'message_type' 	=> $message_type
-	                );
-
-					update_post_meta( $order_id, '_tbz_simplepay_message', $simplepay_message );
-
-                    die( 'IPN Processed OK. Payment Failed' );
-	            }
 			}
-			else{
-				$order_id 		= $_POST['customid'];
 
-            	$message 		= 'Thank you for shopping with us. <br />However, the transaction wasn\'t successful, payment wasn\'t received.';
-				$message_type 	= 'error';
+			wp_redirect( wc_get_page_permalink( 'cart' ) );
 
-                $simplepay_message = array(
-                	'message'		=> $message,
-                	'message_type' 	=> $message_type
-                );
+			exit;
 
-				update_post_meta( $order_id, '_tbz_simplepay_message', $simplepay_message );
-
-                die( 'IPN Processed OK' );
-			}
 		}
 
 	}
 
-	function tbz_wc_simplepay_success_message(){
-
-		if( function_exists( 'is_order_received_page' )){
-
-			$order_id 		= absint( get_query_var( 'order-received' ) );
-			$order 			= new WC_Order( $order_id );
-			$payment_method = $order->payment_method;
-
-			if( is_order_received_page() &&  ( 'tbz_simplepay_gateway' == $payment_method ) ){
-				$simplepay_message 	= get_post_meta( $order_id, '_tbz_simplepay_message', true );
-
-				if( isset( $simplepay_message ) && ! empty( $simplepay_message ) ){
-					if( ! empty( $simplepay_message['message'] ) ){
-						$message 		= $simplepay_message['message'];
-					}
-					if( ! empty( $simplepay_message['message_type'] ) ){
-						$message_type 	= $simplepay_message['message_type'];
-					}
-
-					delete_post_meta( $order_id, '_tbz_simplepay_message' );
-
-					if( ! wc_has_notice ($message, $message_type ) ){
-						wc_add_notice( $message, $message_type );
-					}
-				}
-			}
-		}
-	}
-	add_action( 'wp', 'tbz_wc_simplepay_success_message' );
 
 	/**
  	* Add SimplePay Gateway to WC
  	**/
-	function tbz_wc_add_simplepay_gateway($methods) {
+	function tbz_wc_add_simplepay_gateway( $methods ) {
+
 		$methods[] = 'WC_Tbz_SimplePay_Gateway';
 		return $methods;
-	}
 
+	}
 	add_filter('woocommerce_payment_gateways', 'tbz_wc_add_simplepay_gateway' );
-
-
-	/**
-	 * only add the naira currency and symbol if WC versions is less than 2.1
-	 */
-	if ( version_compare( WOOCOMMERCE_VERSION, "2.1" ) <= 0 ) {
-
-		/**
-		* Add NGN as a currency in WC
-		**/
-		add_filter( 'woocommerce_currencies', 'tbz_add_my_currency' );
-
-		if( ! function_exists( 'tbz_add_my_currency' )){
-			function tbz_add_my_currency( $currencies ) {
-			     $currencies['NGN'] = __( 'Naira', 'woocommerce' );
-			     return $currencies;
-			}
-		}
-
-		/**
-		* Enable the naira currency symbol in WC
-		**/
-		add_filter('woocommerce_currency_symbol', 'tbz_add_my_currency_symbol', 10, 2);
-
-		if( ! function_exists( 'tbz_add_my_currency_symbol' ) ){
-			function tbz_add_my_currency_symbol( $currency_symbol, $currency ) {
-			     switch( $currency ) {
-			          case 'NGN': $currency_symbol = '&#8358; '; break;
-			     }
-			     return $currency_symbol;
-			}
-		}
-	}
 
 
 	/**
@@ -549,58 +396,92 @@ function tbz_wc_simplepay_init() {
 	**/
 	if ( version_compare( WOOCOMMERCE_VERSION, "2.1" ) <= 0 ) {
 
-		add_filter('plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2);
+		add_filter( 'plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2 );
 
-		function tbz_simplepay_plugin_action_links($links, $file) {
-		    static $this_plugin;
+		function tbz_simplepay_plugin_action_links( $links, $file ) {
 
-		    if (!$this_plugin) {
+		   static $this_plugin;
+
+		    if ( ! $this_plugin ) {
+
 		        $this_plugin = plugin_basename(__FILE__);
+
 		    }
 
-		    if ($file == $this_plugin) {
+		    if ( $file == $this_plugin ) {
+
 	        $settings_link = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_Tbz_SimplePay_Gateway">Settings</a>';
 		        array_unshift($links, $settings_link);
+
 		    }
+
 		    return $links;
 		}
+
 	}
 	/**
 	* Add Settings link to the plugin entry in the plugins menu for WC 2.1 and above
 	**/
 	else{
-		add_filter('plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2);
 
-		function tbz_simplepay_plugin_action_links($links, $file) {
+		add_filter( 'plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2 );
+
+		function tbz_simplepay_plugin_action_links( $links, $file ) {
+
 		    static $this_plugin;
 
-		    if (!$this_plugin) {
+		    if ( ! $this_plugin ) {
+
 		        $this_plugin = plugin_basename(__FILE__);
+
 		    }
 
 		    if ($file == $this_plugin) {
+
 		        $settings_link = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=wc_tbz_simplepay_gateway">Settings</a>';
 		        array_unshift($links, $settings_link);
+
 		    }
+
 		    return $links;
+
 		}
+
 	}
+
 
 	/**
  	* Display the testmode notice
  	**/
-	function tbz_wc_simplepay_testmode_notice(){
-		$tbz_simplepay_settings = get_option( 'woocommerce_tbz_simplepay_gateway_settings' );
+	function tbz_wc_simplepay_testmode_notice() {
 
-		$simplepay_test_mode = $tbz_simplepay_settings['testmode'];
+		$simplepay_settings = get_option( 'woocommerce_tbz_simplepay_gateway_settings' );
 
-		if ( 'yes' == $simplepay_test_mode ) {
+		$testmode 			= $simplepay_settings['testmode'] === 'yes' ? true : false;
+
+		$public_test_key  	= $simplepay_settings['public_test_key'];
+		$private_test_key  	= $simplepay_settings['private_test_key'];
+
+		$public_live_key  	= $simplepay_settings['public_live_key'];
+		$private_live_key  	= $simplepay_settings['private_live_key'];
+
+		$public_key      	= $testmode ? $public_test_key : $public_live_key;
+		$private_key      	= $testmode ? $private_test_key : $private_live_key;
+
+		if ( $testmode ) {
 	    ?>
 		    <div class="update-nag">
-		        SimplePay testmode is still enabled. Click <a href="<?php echo get_bloginfo('wpurl') ?>/wp-admin/admin.php?page=wc-settings&tab=checkout&section=WC_Tbz_SimplePay_Gateway">here</a> to disable it when you want to start accepting live payment on your site.
+		        SimplePay testmode is still enabled. Click <a href="<?php echo get_bloginfo('wpurl') ?>/wp-admin/admin.php?page=wc-settings&tab=checkout&section=tbz_simplepay_gateway">here</a> to disable it when you want to start accepting live payment on your site.
 		    </div>
 	    <?php
 		}
+
+		// Check required fields
+		if ( ! ( $public_key && $private_key ) ) {
+			echo '<div class="error"><p>' . sprintf( 'Please enter your SimplePay API keys <a href="%s">here</a> to be able to use the SimplePay WooCommerce plugin.', admin_url( 'admin.php?page=wc-settings&tab=checkout&section=tbz_simplepay_gateway' ) ) . '</p></div>';
+		}
+
 	}
 	add_action( 'admin_notices', 'tbz_wc_simplepay_testmode_notice' );
+
 }
