@@ -1,11 +1,19 @@
 # SimplePay WooCommerce Payment Gateway
+
 **Contributors:** tubiz
+
 **Donate link:** http://bosun.me/donate
+
 **Tags:** woocommerce, payment gateway, payment gateways, mastercard, visa cards, mastercards, interswitch, verve cards, tubiz plugins, verve, nigeria, simplepay
+
 **Requires at least:** 4.4
+
 **Tested up to:** 4.7
+
 **Stable tag:** 2.0.0
+
 **License:** GPLv2 or later
+
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html
 
 SimplePay Woocommerce Payment Gateway allows you to accept local and International payment via MasterCard, Visa and Verve Cards.
