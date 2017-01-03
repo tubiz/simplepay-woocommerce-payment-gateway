@@ -10,7 +10,7 @@
 
 **Tested up to:** 4.7
 
-**Stable tag:** 2.0.0
+**Stable tag:** 2.0.1
 
 **License:** GPLv2 or later
 
@@ -133,6 +133,8 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Changelog
 
+### 2.0.1
+* 	Fix: Change token verification url
 
 ### 2.0.0
 * 	New: Update plugin to use the new SimplePay platform.
@@ -162,8 +164,8 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 ## Upgrade Notice
 
 
-### 2.0.0
-*	Update plugin to use the new SimplePay platform. Make sure your API keys is inserted in the plugin settings page after the update
+### 2.0.1
+*	Update to this version immediately to fix an issue with the payment token verification url
 
 
 
