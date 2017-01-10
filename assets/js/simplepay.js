@@ -31,13 +31,15 @@ jQuery( function( $ ) {
 
             $form.submit();
 
-            $.block({
+            $( this.el ).block({
                 message: null,
+                timeout: 4000,
                 overlayCSS: {
                     background: '#fff',
                     opacity: 0.6
                 }
             });
+
         };
 
         var wcSimplepayHandler = SimplePay.configure({

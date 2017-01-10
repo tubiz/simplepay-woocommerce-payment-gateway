@@ -10,7 +10,7 @@
 
 **Tested up to:** 4.7
 
-**Stable tag:** 2.0.1
+**Stable tag:** 2.0.2
 
 **License:** GPLv2 or later
 
@@ -133,6 +133,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Changelog
 
+### 2.0.2
+* 	Fix: Payment method icon not showing
+
 ### 2.0.1
 * 	Fix: Change token verification url
 
@@ -164,8 +167,8 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 ## Upgrade Notice
 
 
-### 2.0.1
-*	Update to this version immediately to fix an issue with the payment token verification url
+### 2.0.2
+* 	This fix an issue with the payment method icon not showing
 
 
 
