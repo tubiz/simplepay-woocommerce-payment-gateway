@@ -114,6 +114,7 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 = 2.0.2 =
 * 	Fix: Payment method icon not showing
+*	Fix: Payment not being verified issue with token verification url
 
 = 2.0.1 =
 * 	Fix: Change token verification url
@@ -141,7 +142,7 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 == Upgrade Notice ==
 
 = 2.0.2 =
-* 	This fix an issue with the payment method icon not showing
+* 	Important update this fix an issue with the payment method icon not showing and payment not being verified. Update to this version right away
 
 
 == Screenshots ==

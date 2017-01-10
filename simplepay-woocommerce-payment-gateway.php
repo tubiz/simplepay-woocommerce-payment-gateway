@@ -195,7 +195,7 @@ function tbz_wc_simplepay_init() {
 					'type'        		=> 'checkbox',
 					'label'       		=> 'Enable Test Mode',
 					'default'     		=> 'no',
-					'description' 		=> 'Test mode enables you to test payments before going live. <br />If you ready to start receving payment on your site, kindly uncheck this.',
+					'description' 		=> 'Test mode enables you to test payments before going live. <br />If you ready to start receiving payment on your site, kindly uncheck this.',
 				)
 			);
 
@@ -287,7 +287,7 @@ function tbz_wc_simplepay_init() {
 
 			if( isset( $_POST['wc_simplepay_token'], $_POST['wc_simplepay_order_id'] ) ) {
 
-				$verify_url		= 'https://checkout.simplepay.ng/v2/payments/card/charge';
+				$verify_url		= 'https://api.simplepay.ng/v1/payments/verify';
 
 				$order_id 		= (int) $_POST['wc_simplepay_order_id'];
 
@@ -361,7 +361,7 @@ function tbz_wc_simplepay_init() {
 
 					} else {
 
-						wp_redirect( wc_get_page_permalink( 'cart' ) );
+						wp_redirect( wc_get_page_permalink( 'checkout' ) );
 
 						exit;
 		            }
@@ -370,7 +370,7 @@ function tbz_wc_simplepay_init() {
 
 			}
 
-			wp_redirect( wc_get_page_permalink( 'cart' ) );
+			wp_redirect( wc_get_page_permalink( 'checkout' ) );
 
 			exit;
 
