@@ -10,7 +10,7 @@
 
 **Tested up to:** 4.7
 
-**Stable tag:** 2.0.2
+**Stable tag:** 2.1.0
 
 **License:** GPLv2 or later
 
@@ -133,6 +133,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Changelog
 
+### 2.1.0
+*	Fix: Change payment charge url
+
 ### 2.0.2
 * 	Fix: Payment method icon not showing
 *	Fix: Payment not being verified issue with token verification url
@@ -168,8 +171,8 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 ## Upgrade Notice
 
 
-### 2.0.2
-* 	Important update this fix an issue with the payment method icon not showing and payment not being verified. Update to this version right away
+### 2.1.0
+* 	Fix: Change payment charge url
 
 
 
