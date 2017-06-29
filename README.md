@@ -2,15 +2,15 @@
 
 **Contributors:** tubiz
 
-**Donate link:** http://bosun.me/donate
+**Donate link:** https://bosun.me/donate
 
 **Tags:** woocommerce, payment gateway, payment gateways, mastercard, visa cards, mastercards, interswitch, verve cards, tubiz plugins, verve, nigeria, simplepay
 
 **Requires at least:** 4.4
 
-**Tested up to:** 4.7
+**Tested up to:** 4.8
 
-**Stable tag:** 2.1.0
+**Stable tag:** 2.2.0
 
 **License:** GPLv2 or later
 
@@ -133,6 +133,9 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 
 ## Changelog
 
+### 2.2.0
+*	Fix: Deprecated WooCommerce order function
+
 ### 2.1.0
 *	Fix: Change payment charge url
 
@@ -171,8 +174,8 @@ __*You can select the radio button next to SimplePay from the list of payment ga
 ## Upgrade Notice
 
 
-### 2.1.0
-* 	Fix: Change payment charge url
+### 2.2.0
+*	Fix: Deprecated WooCommerce order function
 
 
 

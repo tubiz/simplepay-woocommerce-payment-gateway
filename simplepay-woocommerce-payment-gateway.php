@@ -1,11 +1,11 @@
 <?php
 /*
 	Plugin Name: SimplePay WooCommerce Payment Gateway
-	Plugin URI: http://bosun.me/simplepay-woocommerce-payment-gateway
+	Plugin URI: https://bosun.me/simplepay-woocommerce-payment-gateway
 	Description: Simplepay WooCommerce Payment Gateway allows you to accept local and International payment via Verve Card, MasterCard & Visa Card.
-	Version: 2.1.0
+	Version: 2.2.0
 	Author: Tunbosun Ayinla
-	Author URI: http://bosun.me/
+	Author URI: https://bosun.me/
 	License:           GPL-2.0+
  	License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  	GitHub Plugin URI: https://github.com/tubiz/simplepay-woocommerce-payment-gateway
@@ -219,19 +219,26 @@ function tbz_wc_simplepay_init() {
 
 			if ( is_checkout_pay_page() && get_query_var( 'order-pay' ) ) {
 
-				$order_key 		= urldecode( $_GET['key'] );
-				$order_id  		= absint( get_query_var( 'order-pay' ) );
+				$order_key 			= urldecode( $_GET['key'] );
+				$order_id  			= absint( get_query_var( 'order-pay' ) );
 
-				$order        	= wc_get_order( $order_id );
-				$email 			= $order->billing_email;
-				$amount 		= $order->order_total * 100;
-				$address 		= $order->billing_address_1 . ' ' . $order->billing_address_2;
-				$city 			= $order->billing_city;
-				$country 		= $order->billing_country;
+				$order        		= wc_get_order( $order_id );
 
-				$description 	= 'Payment for Order #' . $order_id;
+				$email  			= method_exists( $order, 'get_billing_email' ) ? $order->get_billing_email() : $order->billing_email;
+				$billing_address_1 	= method_exists( $order, 'get_billing_address_1' ) ? $order->get_billing_address_1() : $order->billing_address_1;
+				$billing_address_2 	= method_exists( $order, 'get_billing_address_2' ) ? $order->get_billing_address_2() : $order->billing_address_2;
+				$city  				= method_exists( $order, 'get_billing_city' ) ? $order->get_billing_city() : $order->billing_city;
+				$country  			= method_exists( $order, 'get_billing_country' ) ? $order->get_billing_country() : $order->billing_country;
 
-				if ( $order->id == $order_id && $order->order_key == $order_key ) {
+				$amount 			= $order->get_total() * 100;
+				$address 			= $billing_address_1 . ' ' . $billing_address_2;
+
+				$description 		= 'Payment for Order #' . $order_id;
+
+	            $the_order_id 		= method_exists( $order, 'get_id' ) ? $order->get_id() : $order->id;
+	            $the_order_key 		= method_exists( $order, 'get_order_key' ) ? $order->get_order_key() : $order->order_key;
+
+				if ( $the_order_id == $order_id && $the_order_key == $order_key ) {
 					$simplepay_params['key'] 			= $this->public_key;
 					$simplepay_params['email'] 			= $email;
 					$simplepay_params['address'] 		= $address;
@@ -392,62 +399,29 @@ function tbz_wc_simplepay_init() {
 
 
 	/**
-	* Add Settings link to the plugin entry in the plugins menu for WC below 2.1
+	* Add Settings link to the plugin entry in the plugins menu
 	**/
-	if ( version_compare( WOOCOMMERCE_VERSION, "2.1" ) <= 0 ) {
+	function tbz_simplepay_plugin_action_links( $links, $file ) {
 
-		add_filter( 'plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2 );
+	    static $this_plugin;
 
-		function tbz_simplepay_plugin_action_links( $links, $file ) {
+	    if ( ! $this_plugin ) {
 
-		   static $this_plugin;
+	        $this_plugin = plugin_basename( __FILE__ );
 
-		    if ( ! $this_plugin ) {
+	    }
 
-		        $this_plugin = plugin_basename(__FILE__);
+	    if ( $file == $this_plugin ) {
 
-		    }
+	        $settings_link = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=wc_tbz_simplepay_gateway">Settings</a>';
+	        array_unshift($links, $settings_link);
 
-		    if ( $file == $this_plugin ) {
+	    }
 
-	        $settings_link = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_Tbz_SimplePay_Gateway">Settings</a>';
-		        array_unshift($links, $settings_link);
-
-		    }
-
-		    return $links;
-		}
+	    return $links;
 
 	}
-	/**
-	* Add Settings link to the plugin entry in the plugins menu for WC 2.1 and above
-	**/
-	else{
-
-		add_filter( 'plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2 );
-
-		function tbz_simplepay_plugin_action_links( $links, $file ) {
-
-		    static $this_plugin;
-
-		    if ( ! $this_plugin ) {
-
-		        $this_plugin = plugin_basename(__FILE__);
-
-		    }
-
-		    if ($file == $this_plugin) {
-
-		        $settings_link = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=wc_tbz_simplepay_gateway">Settings</a>';
-		        array_unshift($links, $settings_link);
-
-		    }
-
-		    return $links;
-
-		}
-
-	}
+	add_filter( 'plugin_action_links', 'tbz_simplepay_plugin_action_links', 10, 2 );
 
 
 	/**
